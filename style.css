@@ -1,18 +1,36 @@
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+
+}
+
+
+
+
 body {
   font-family: 'Pirata One', cursive;
-  background-image: url('https://i.imgur.com/kV9FfXg.jpg'); /* parchment map */
-  background-size: cover;
-  color: #fff;
+  background-color: #f0f0f0;
+  color: #333;
   text-align: center;
-  padding: 20px;
   margin: 0;
+  padding: 20px;
 }
 
 .title {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  color: #ffebc6;
+  font-size: 2.8rem;
+  color: #d4af37; /* gold like color */
   text-shadow: 2px 2px 4px #000;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .board {
@@ -20,23 +38,20 @@ body {
   width: 500px;
   height: 500px;
   margin: 0 auto;
-  background: url('https://i.imgur.com/7oRUJXy.jpg'); /* wood texture */
-  background-size: cover;
-  border: 6px solid #4b2c20;
-  box-shadow: 0 0 20px #000;
-  border-radius: 15px;
+  background-color: white;
+  border: 4px solid #222;
 }
 
 .spot {
   position: absolute;
   width: 30px;
   height: 30px;
-  background-color: #f0e0c0;
-  border: 2px solid #222;
+  background-color: white;
+  border: 2px solid #333;
   border-radius: 50%;
   cursor: pointer;
   z-index: 2;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: transform 0.2s;
 }
 
 .spot:hover {
@@ -57,7 +72,7 @@ body {
 
 .line {
   position: absolute;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: #333;
   z-index: 1;
 }
 
