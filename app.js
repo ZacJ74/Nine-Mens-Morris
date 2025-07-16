@@ -1,85 +1,89 @@
-// =======================================
-// 1. Board Setup: 24 playable positions
-// =======================================
+document.addEventListener("DOMContentLoaded", () => {
+  // =======================================
+  // 1. Board Setup: 24 playable positions
+  // =======================================
+  const board = Array(24).fill(null); // "P1", "P2", or null
+  let currentPlayer = "P1";
 
-const board = Array(24).fill(null); // "P1", "P2", or null
-let currentPlayer = "P1";
+  const millCombos = [ // all possible mills
+    [0, 1, 2],   [3, 4, 5],   [6, 7, 8],
+    [9, 10, 11], [12, 13, 14], [15, 16, 17],
+    [18, 19, 20], [21, 22, 23],
+    [0, 9, 21],  [3, 10, 18], [6, 11, 15],
+    [1, 4, 7],   [16, 19, 22], [8, 12, 17],
+    [5, 13, 20], [2, 14, 23]
+  ];
 
-const millCombos = [
-  [0, 1, 2],   [3, 4, 5],   [6, 7, 8],
-  [9, 10, 11], [12, 13, 14], [15, 16, 17],
-  [18, 19, 20], [21, 22, 23],
-  [0, 9, 21],  [3, 10, 18], [6, 11, 15],
-  [1, 4, 7],   [16, 19, 22], [8, 12, 17],
-  [5, 13, 20], [2, 14, 23]
-];
+  // =======================================
+  // 2. UI Elements & Setup
+  // =======================================
 
-// =======================================
-// 2. UI Rendering
-// We'll use grid positions (static for now)
-// =======================================
+  const statusEl = document.getElementById("status"); // 
+  const spots = document.querySelectorAll(".spot"); // Uses existing spot divs
 
-const boardEl = document.getElementById("board");
+  // Add data-index attributes & event listeners to spots
+  spots.forEach((spot, index) => {
+    spot.dataset.index = index;
+    spot.addEventListener("click", handlePlace);
+  });
 
-// Playable positions only — mapped visually in an 8x8 grid
-const playableIndices = [
-  0, 1, 2,      -1,     3, 4, 5,
-  -1, -1, -1,   -1,     6, 7, 8,
-  -1, -1, -1,   9,     10,11,-1,
-  -1, -1, -1,  12,     13,14,-1,
-  -1, -1, -1,  15,     16,17,-1,
-  -1, -1, -1,  18,     19,20,-1,
-  21,22,23,     -1,    -1,-1,-1
-];
+  let piecesPlaced = { P1: 0, P2: 0 };
+  let phase = "placing";
 
-// Render grid: total of 49 slots in an 8x8 layout
-for (let i = 0; i < 49; i++) {
-  const div = document.createElement("div");
+  statusEl.textContent = `${currentPlayer}'s turn.`;
 
-  if (playableIndices[i] !== -1 && playableIndices[i] !== undefined) {
-    div.classList.add("tile");
-    div.dataset.index = playableIndices[i];
-    div.addEventListener("click", handlePlace);
-  } else {
-    div.style.visibility = "hidden"; // blank space in the layout
+  // =======================================
+  // 3. Mill Checking Function
+  // =======================================
+
+  function checkMill(position, player) {
+    const relevantCombos = millCombos.filter(combo => combo.includes(Number(position)));
+    return relevantCombos.some(combo => combo.every(i => board[i] === player));
   }
 
-  boardEl.appendChild(div);
-}
+  // =======================================
+  // 4. Place Piece Handler
+  // =======================================
 
-// =======================================
-// 3. Mill Checking Function
-// =======================================
+  function handlePlace(event) {
+    const index = parseInt(event.target.dataset.index);
 
-function checkMill(position, player) {
-  const relevantCombos = millCombos.filter(combo => combo.includes(Number(position)));
-  return relevantCombos.some(combo => combo.every(i => board[i] === player));
-}
+    if (board[index]) {
+      statusEl.textContent = "❌ That spot is already taken.";
+      return;
+    }
 
-// =======================================
-// 4. Place Piece Handler
-// =======================================
+    if (phase === "placing") {
+      if (piecesPlaced[currentPlayer] >= 9) {
+        statusEl.textContent = `${currentPlayer} has already placed all 9 pieces.`;
+        return;
+      }
 
-function handlePlace(event) {
-  const index = parseInt(event.target.dataset.index);
+      // Place piece
+      board[index] = currentPlayer;
+       event.target.classList.add(currentPlayer === "P1" ? "player1" : "player2"); //
+      piecesPlaced[currentPlayer]++;
 
-  if (board[index]) {
-    console.log("❌ That spot is taken.");
-    return;
+      let message = `${currentPlayer} placed at spot ${index}.`;
+
+      if (checkMill(index, currentPlayer)) {
+        message = `🎉 ${currentPlayer} formed a MILL! Remove an opponent's piece.`;
+        // Optional: enter remove mode here
+      }
+
+      if (piecesPlaced.P1 === 9 && piecesPlaced.P2 === 9) {
+        phase = "moving";
+        message += " 🟢 All pieces placed. Moving phase begins!";
+      }
+
+      const placingPlayer = currentPlayer;
+      currentPlayer = currentPlayer === "P1" ? "P2" : "P1";
+
+      if (phase === "placing" && !checkMill(index, placingPlayer)) {
+        message += ` ${currentPlayer}'s turn.`;
+      }
+
+      statusEl.textContent = message;
+    }
   }
-
-  // Place the piece
-  board[index] = currentPlayer;
-  event.target.classList.add(currentPlayer);
-
-  console.log(`🎯 ${currentPlayer} placed at ${index}`);
-
-  // Check for mill
-  if (checkMill(index, currentPlayer)) {
-    console.log(`🎉 ${currentPlayer} formed a MILL!`);
-    // In full game, trigger "remove opponent piece" mode here
-  }
-
-  // Switch player
-  currentPlayer = currentPlayer === "P1" ? "P2" : "P1";
-}
+});

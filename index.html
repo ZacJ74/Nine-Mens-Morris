@@ -11,8 +11,11 @@
     <div class ="container">
         <div class = "header">
          <h1 class = "title">Nine Men's Morris</h1>
+         
 </div>
-  <div class="board">
+<div id="status" class="status">Player 1's turn</div>
+
+  <div class="board" id = "board">
     <!-- 🔵 SPOTS -->
 
     <!-- Outer square -->
@@ -95,22 +98,5 @@
     <div class="line horizontal" style="left: 40px; top: 250px; width: 140px;"></div>
     <div class="line horizontal" style="right: 40px; top: 250px; width: 140px;"></div>
   </div>
-<script>
-  const spots = document.querySelectorAll('.spot'); // grabs every HTML element with the class .spot and puts them in a list
-  let currentPlayer = 1;
-
-  spots.forEach(spot => { // loops through all spots
-    spot.addEventListener('click', () => { // click listener
-      // Prevent placing on an occupied spot
-      if (spot.classList.contains('player1') || spot.classList.contains('player2')) {
-        return;
-      }
-
-      // Apply the correct player class
-      spot.classList.add(`player${currentPlayer}`);
-
-      // Switch turns
-      currentPlayer = currentPlayer === 1 ? 2 : 1;
-    });
-  });
-</script>
+  <script src="app.js"></script> 
+</div>
