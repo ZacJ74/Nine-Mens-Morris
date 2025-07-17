@@ -24,7 +24,7 @@ Forming a "mill" (three of your pieces in a row along any line) allows you to re
 ## Features
 
 * **Classic Nine Men's Morris Gameplay:** Fully implements the three phases: placing, moving, and flying.
-* **Pirate/Caribbean Theme:** Immerse yourself in the high seas with thematic design elements.
+* **Pirate/Caribbean Theme:** 
 * **Interactive Board:** Click-to-play interface for seamless interaction.
 * **Status Updates:** Clear messages guide players through their turns, mill formations, and game outcomes.
 * **Restart Game:** A "Sail Again!" button allows for quick resets and new adventures.
