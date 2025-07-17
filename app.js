@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     player2: 0
   };
 
-  const millCombos = [
+  const millCombos = [ // updated this with more detail
     // Horizontal Mills
     [0, 1, 2],
     [3, 4, 5],
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     [5, 13, 20],
     [8, 12, 17] // Right side vertical
   ];
-
+// added this to help map out all adjacent spaces
   const adjacencyList = {
     0: [1, 9],
     1: [0, 2, 4],
@@ -285,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Checks and updates the current game phase (placing, moving, flying)
   function checkGamePhase() {
-    // Only transition to moving/flying if all 9 pieces are placed by both players
+    // Now only transitions if all 9 pieces are placed by both players
     if (piecesPlaced.player1 === 9 && piecesPlaced.player2 === 9) {
       if (player1PiecesOnBoard < 3 || player2PiecesOnBoard < 3) {
         // If either player has less than 3 pieces on board, that player can fly
@@ -302,7 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Checks for win conditions
-  function checkWinCondition() {
+  function checkWinCondition() { // replaced this so it doesnt run 
     const opponent = getOpponent(currentPlayer);
     const opponentPieces = board.filter(piece => piece === opponent).length;
 
