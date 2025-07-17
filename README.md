@@ -1,5 +1,10 @@
 # Nine Men's Morris: Caribbean Conquest! 🏴‍☠️
 
+![Your game board screenshot](assets/3271966E-7FB7-4D7A-9CA2-387E029E6D24.jpeg)
+
+![Your second game board screenshot](assets/MidPlay.jpeg)
+
+Currently working on getting the third screenshot.
 ## Table of Contents
 
 
