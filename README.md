@@ -71,4 +71,3 @@ This project is currently **in development**. The core `placing` and `moving` ph
 * **Undo/Redo Functionality:** For strategic analysis.
 
 
-
