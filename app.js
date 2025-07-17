@@ -3,32 +3,42 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentPlayer = "player1";
   let phase = "placing";
   let removeMode = false;
-  let selecetedSpot = null; // stores index of the selected piece
- let player1PiecesOnBoard = 0; // tracks player1s pieces on the board
- let player2PiecesOnBoard = 0; // tracks player2s pieces on the board
+  let selectedSpot = null; // Corrected typo here!
+  let player1PiecesOnBoard = 0; // tracks player1s pieces on the board
+  let player2PiecesOnBoard = 0; // tracks player2s pieces on the board
 
   const statusEl = document.getElementById("status");
   const spots = document.querySelectorAll(".spot");
+  const restartButton = document.getElementById("restartButton"); // Initialize restart button here
 
   const piecesPlaced = {
     player1: 0,
     player2: 0
   };
 
-const millCombos = [
-  // Horizontal Mills
-  [0, 1, 2], [3, 4, 5], [6, 7, 8], // Outer Square
-  [9, 10, 11], [12, 13, 14], [15, 16, 17], // Middle Square
-  [18, 19, 20], [21, 22, 23], // Inner Square 
+  const millCombos = [
+    // Horizontal Mills
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8], // Outer Square
+    [9, 10, 11],
+    [12, 13, 14],
+    [15, 16, 17], // Middle Square
+    [18, 19, 20],
+    [21, 22, 23], // Inner Square
 
-  // Vertical Mills
-  [0, 9, 21], [3, 10, 18], [6, 11, 15], // Left side vertical
-  [1, 4, 7], // Middle vertical on outer board
-  [16, 19, 22], // Middle vertical on inner board
-  [2, 14, 23], [5, 13, 20], [8, 12, 17]  // Right side vertical
-];
+    // Vertical Mills
+    [0, 9, 21],
+    [3, 10, 18],
+    [6, 11, 15], // Left side vertical
+    [1, 4, 7], // Middle vertical on outer board
+    [16, 19, 22], // Middle vertical on inner board
+    [2, 14, 23],
+    [5, 13, 20],
+    [8, 12, 17] // Right side vertical
+  ];
 
-const adjacencyList = { 
+  const adjacencyList = {
     0: [1, 9],
     1: [0, 2, 4],
     2: [1, 14],
@@ -55,34 +65,107 @@ const adjacencyList = {
     23: [2, 14, 22]
   };
 
+  // Helper function to check if two spots are adjacent
   function isAdjacent(from, to) {
     return adjacencyList[from] && adjacencyList[from].includes(to);
   }
-
 
   // Add event listeners to each spot
   spots.forEach(spot => {
     spot.addEventListener("click", handleSpotClick);
   });
 
- function handleSpotClick(e) {
+  restartButton.addEventListener("click", resetGame);
+
+  // Main click handler for board spots
+  function handleSpotClick(e) {
     const spot = e.target;
     const index = parseInt(spot.id.replace("spot-", ""));
 
+    // --- REMOVE MODE LOGIC ---
     if (removeMode) {
-      
-      return;
+      if (board[index] === getOpponent(currentPlayer)) {
+        // Can't remove a piece that is part of an opponent's mill, unless that's their only option (advanced rule, often simplified)
+        // For now, let's allow removal of any opponent piece not in a mill.
+        // Or if all opponent pieces are in a mill, then any can be removed.
+        if (checkMill(index, getOpponent(currentPlayer))) {
+            const opponentPiecesNotInMill = Array.from(spots).filter((s, i) =>
+                board[i] === getOpponent(currentPlayer) && !checkMill(i, getOpponent(currentPlayer))
+            ).length;
+
+            if (opponentPiecesNotInMill > 0) {
+                statusEl.textContent = "❌ You must remove an opponent's piece NOT in a mill, if available.";
+                return;
+            }
+        }
+
+        board[index] = null;
+        spot.classList.remove("player1", "player2");
+        if (getOpponent(currentPlayer) === "player1") {
+          player1PiecesOnBoard--;
+        } else {
+          player2PiecesOnBoard--;
+        }
+        removeMode = false;
+        
+        // After removing, check win condition then switch player
+        if (checkWinCondition()) return;
+        currentPlayer = getOpponent(currentPlayer); // Opponent's turn after removal
+        updateStatus();
+      } else {
+        statusEl.textContent = "❌ You must remove an opponent's piece.";
+      }
+      return; // Exit function after handling removeMode
     }
 
+    // --- PLACING PHASE LOGIC ---
     if (phase === "placing") {
-      
-    } else if (phase === "moving") {
+      if (board[index]) {
+        statusEl.textContent = "❌ That spot is already taken.";
+        return;
+      }
+
+      if (piecesPlaced[currentPlayer] >= 9) {
+        statusEl.textContent = `${capitalize(currentPlayer)} has placed all 9 pieces.`;
+        return;
+      }
+
+      board[index] = currentPlayer;
+      spot.classList.add(currentPlayer);
+      piecesPlaced[currentPlayer]++;
+      // Update pieces on board count
+      if (currentPlayer === "player1") {
+        player1PiecesOnBoard++;
+      } else {
+        player2PiecesOnBoard++;
+      }
+
+      let message = `${capitalize(currentPlayer)} placed at spot ${index}.`;
+
+      if (checkMill(index, currentPlayer)) {
+        message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
+        removeMode = true;
+        statusEl.textContent = message;
+        // Do NOT change player, as they get another move (removal)
+        return;
+      }
+
+      // After placing, check for phase change and win condition
+      checkGamePhase();
+      if (checkWinCondition()) return;
+
+      currentPlayer = getOpponent(currentPlayer);
+      updateStatus(message); // Update status with placement info + next player
+      return; // Exit function after handling placing phase
+    }
+
+    // --- MOVING PHASE LOGIC ---
+    if (phase === "moving") {
       // If no piece is selected yet
       if (selectedSpot === null) {
-        // Try to select a piece
-        if (board[index] === currentPlayer) {
+        if (board[index] === currentPlayer) { // Select player's own piece
           selectedSpot = index;
-          spot.classList.add("selected"); // Add a class for visual feedback
+          spots[index].classList.add("selected"); // Use spots[index] as spot might be different if target was a child element
           statusEl.textContent = `⚓ ${capitalize(currentPlayer)}, move piece from spot ${index}.`;
         } else if (board[index] === null) {
           statusEl.textContent = "Aye, pick one of yer own pieces to move!";
@@ -94,54 +177,9 @@ const adjacencyList = {
         if (selectedSpot === index) { // Clicked the same spot, deselect
           spots[selectedSpot].classList.remove("selected");
           selectedSpot = null;
-          statusEl.textContent = `${capitalize(currentPlayer)}'s turn. Deselected piece.`;
+          updateStatus(); // Update status back to current player's turn
           return;
         }
-       else if (phase === "flying") {
-      if (selectedSpot === null) {
-        if (board[index] === currentPlayer) {
-          selectedSpot = index;
-          spot.classList.add("selected");
-          statusEl.textContent = `Ahoy, ${capitalize(currentPlayer)}, fly yer piece from spot ${index}!`;
-        } else if (board[index] === null) {
-          statusEl.textContent = "Ye need to select yer own piece to fly, savvy?";
-        } else {
-          statusEl.textContent = "That be a rival's piece, ye can't fly that!";
-        }
-      } else {
-        if (selectedSpot === index) { // Clicked the same spot, deselect
-          spots[selectedSpot].classList.remove("selected");
-          selectedSpot = null;
-          statusEl.textContent = `${capitalize(currentPlayer)}'s turn. Deselected piece.`;
-          return;
-        }
-        if (board[index] === null) { // Any empty spot is valid for flying
-          board[index] = currentPlayer;
-          board[selectedSpot] = null;
-
-          spots[selectedSpot].classList.remove(currentPlayer, "selected");
-          spot.classList.add(currentPlayer);
-
-          let message = `${capitalize(currentPlayer)} flew from ${selectedSpot} to ${index}.`;
-
-          if (checkMill(index, currentPlayer)) {
-            message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
-            removeMode = true;
-            statusEl.textContent = message;
-          } else {
-            currentPlayer = getOpponent(currentPlayer);
-            updateStatus();
-          }
-          selectedSpot = null;
-        } else {
-          statusEl.textContent = "That spot be taken, scurvy dog! Find an empty one.";
-        }
-      }
-    }
-
-
-
-
 
         // Check if the destination spot is empty and adjacent
         if (board[index] === null && isAdjacent(selectedSpot, index)) {
@@ -158,8 +196,11 @@ const adjacencyList = {
             message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
             removeMode = true;
             statusEl.textContent = message;
-            // No turn change yet, player gets to remove a piece
+            // Do NOT change player, as they get another move (removal)
           } else {
+            // After moving, check for phase change and win condition
+            checkGamePhase(); // Important to check phase after piece count might change (though not directly from moves)
+            if (checkWinCondition()) return;
             currentPlayer = getOpponent(currentPlayer);
             updateStatus();
           }
@@ -169,49 +210,124 @@ const adjacencyList = {
           statusEl.textContent = "That be an invalid move, scallywag! Spot not empty or not adjacent.";
         }
       }
+      return; // Exit function after handling moving phase
+    }
+
+    // --- FLYING PHASE LOGIC ---
+    if (phase === "flying") {
+      if (selectedSpot === null) {
+        if (board[index] === currentPlayer) {
+          selectedSpot = index;
+          spots[index].classList.add("selected");
+          statusEl.textContent = `Ahoy, ${capitalize(currentPlayer)}, fly yer piece from spot ${index}!`;
+        } else if (board[index] === null) {
+          statusEl.textContent = "Ye need to select yer own piece to fly, savvy?";
+        } else {
+          statusEl.textContent = "That be a rival's piece, ye can't fly that!";
+        }
+      } else {
+        if (selectedSpot === index) { // Clicked the same spot, deselect
+          spots[selectedSpot].classList.remove("selected");
+          selectedSpot = null;
+          updateStatus();
+          return;
+        }
+        if (board[index] === null) { // Any empty spot is valid for flying
+          board[index] = currentPlayer;
+          board[selectedSpot] = null;
+
+          spots[selectedSpot].classList.remove(currentPlayer, "selected");
+          spot.classList.add(currentPlayer);
+
+          let message = `${capitalize(currentPlayer)} flew from ${selectedSpot} to ${index}.`;
+
+          if (checkMill(index, currentPlayer)) {
+            message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
+            removeMode = true;
+            statusEl.textContent = message;
+          } else {
+            // After flying, check for phase change (though unlikely, but good practice) and win condition
+            checkGamePhase();
+            if (checkWinCondition()) return;
+            currentPlayer = getOpponent(currentPlayer);
+            updateStatus();
+          }
+          selectedSpot = null;
+        } else {
+          statusEl.textContent = "That spot be taken, scurvy dog! Find an empty one.";
+        }
+      }
+      return; // Exit function after handling flying phase
     }
   }
-});
 
-// After a piece is removed or moved, check for flying phase
-function checkGamePhase() {
-  if (piecesPlaced.player1 === 9 && piecesPlaced.player2 === 9) {
-    if (player1PiecesOnBoard < 3) {
-      phase = "flying";
-      statusEl.textContent = `Arrr, ${capitalize(currentPlayer)} can now FLY!`;
-    } else if (player2PiecesOnBoard < 3) {
-      phase = "flying";
-      statusEl.textContent = `Arrr, ${capitalize(currentPlayer)} can now FLY!`;
-    } else {
-      phase = "moving"; // Default to moving if not flying
-    }
+  // Checks if a mill is formed at a given position for a player
+  function checkMill(pos, player) {
+    return millCombos
+      .filter(combo => combo.includes(pos))
+      .some(combo => combo.every(i => board[i] === player));
   }
-}
-// Call checkGamePhase() at the end of handleSpotClick or after any piece movement/removal
 
-function checkWinCondition() {
+  // Gets the opponent's player string
+  function getOpponent(player) {
+    return player === "player1" ? "player2" : "player1";
+  }
+
+  // Capitalizes the first letter of a string
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  // Updates the status display
+  function updateStatus(message = null) {
+    statusEl.textContent = message ? message + ` ${capitalize(currentPlayer)}'s turn.` : `${capitalize(currentPlayer)}'s turn.`;
+  }
+
+  // Checks and updates the current game phase (placing, moving, flying)
+  function checkGamePhase() {
+    // Only transition to moving/flying if all 9 pieces are placed by both players
+    if (piecesPlaced.player1 === 9 && piecesPlaced.player2 === 9) {
+      if (player1PiecesOnBoard < 3 || player2PiecesOnBoard < 3) {
+        // If either player has less than 3 pieces on board, that player can fly
+        // Note: The game state can be 'flying' for one player even if the other isn't.
+        // We set phase to 'flying' if ANY player can fly. The `handleSpotClick` will manage who can actually use it.
+        phase = "flying";
+        statusEl.textContent = `Arrr, a player can now FLY! ${capitalize(currentPlayer)}'s turn.`;
+      } else {
+        phase = "moving"; // Default to moving if not flying
+      }
+    }
+    // Update status to reflect new phase if it changed
+    updateStatus();
+  }
+
+  // Checks for win conditions
+  function checkWinCondition() {
     const opponent = getOpponent(currentPlayer);
     const opponentPieces = board.filter(piece => piece === opponent).length;
 
-    if (opponentPieces < 3) {
-      statusEl.textContent = `🏴‍☠️ ${capitalize(currentPlayer)} WINS! The ${capitalize(opponent)} has fewer than 3 pieces!`;
-      // Disable further moves or show a restart button
-      disableBoardClicks(); // You'd need to implement this
-      return true;
-    }
-
+        if (piecesPlaced.player1 === 9 && piecesPlaced.player2 === 9) {
+      if (opponentPieces < 3) {
+        statusEl.textContent = `🏴‍☠️ ${capitalize(currentPlayer)} WINS! The ${capitalize(opponent)} has fewer than 3 pieces!`;
+        disableBoardClicks();
+        restartButton.style.display = "block";
+        return true;
+      }
+        }
     // Check if the opponent has any valid moves (only relevant in moving/flying phase)
+    // This check is important AFTER the placing phase is complete.
     if (phase === "moving" || phase === "flying") {
       let hasValidMove = false;
       for (let i = 0; i < board.length; i++) {
         if (board[i] === opponent) { // Check each of opponent's pieces
-          const possibleMoves = adjacencyList[i] || [];
-          if (phase === "flying") { // If flying, any empty spot is a valid move
+          if (phase === "flying") {
+            // If flying, and there's an empty spot, they can move
             if (board.includes(null)) {
-                hasValidMove = true;
-                break;
+              hasValidMove = true;
+              break;
             }
           } else { // Moving phase, check adjacent empty spots
+            const possibleMoves = adjacencyList[i] || [];
             for (const adjSpot of possibleMoves) {
               if (board[adjSpot] === null) {
                 hasValidMove = true;
@@ -226,18 +342,357 @@ function checkWinCondition() {
       if (!hasValidMove) {
         statusEl.textContent = `🏴‍☠️ ${capitalize(currentPlayer)} WINS! The ${capitalize(opponent)} has no legal moves!`;
         disableBoardClicks();
+        restartButton.style.display = "block"; // Show restart button
         return true;
       }
     }
     return false;
   }
 
+  // Disables further clicks on the board
   function disableBoardClicks() {
     spots.forEach(spot => {
       spot.removeEventListener("click", handleSpotClick);
       spot.style.cursor = "not-allowed";
     });
   }
+
+  // Resets the game to its initial state
+  function resetGame() {
+    board.fill(null);
+    spots.forEach(spot => {
+      spot.classList.remove("player1", "player2", "selected");
+      spot.addEventListener("click", handleSpotClick); // Re-add listeners
+      spot.style.cursor = "pointer";
+    });
+    currentPlayer = "player1";
+    phase = "placing";
+    removeMode = false;
+    piecesPlaced.player1 = 0;
+    piecesPlaced.player2 = 0;
+    player1PiecesOnBoard = 0;
+    player2PiecesOnBoard = 0;
+    selectedSpot = null;
+    updateStatus();
+    restartButton.style.display = "none";
+  }
+
+  updateStatus(); // Initial status update when the page loads
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// document.addEventListener("DOMContentLoaded", () => {
+//   const board = Array(24).fill(null);
+//   let currentPlayer = "player1";
+//   let phase = "placing";
+//   let removeMode = false;
+//   let selectedSpot = null; // stores index of the selected piece
+//  let player1PiecesOnBoard = 0; // tracks player1s pieces on the board
+//  let player2PiecesOnBoard = 0; // tracks player2s pieces on the board
+
+//   const statusEl = document.getElementById("status");
+//   const spots = document.querySelectorAll(".spot");
+
+//   const piecesPlaced = {
+//     player1: 0,
+//     player2: 0
+//   };
+
+// const millCombos = [
+//   // Horizontal Mills
+//   [0, 1, 2], [3, 4, 5], [6, 7, 8], // Outer Square
+//   [9, 10, 11], [12, 13, 14], [15, 16, 17], // Middle Square
+//   [18, 19, 20], [21, 22, 23], // Inner Square 
+
+//   // Vertical Mills
+//   [0, 9, 21], [3, 10, 18], [6, 11, 15], // Left side vertical
+//   [1, 4, 7], // Middle vertical on outer board
+//   [16, 19, 22], // Middle vertical on inner board
+//   [2, 14, 23], [5, 13, 20], [8, 12, 17]  // Right side vertical
+// ];
+
+// const adjacencyList = { 
+//     0: [1, 9],
+//     1: [0, 2, 4],
+//     2: [1, 14],
+//     3: [4, 10],
+//     4: [1, 3, 5, 7],
+//     5: [4, 13],
+//     6: [7, 11],
+//     7: [4, 6, 8],
+//     8: [7, 12],
+//     9: [0, 10, 21],
+//     10: [3, 9, 11, 18],
+//     11: [6, 10, 15],
+//     12: [8, 13, 17],
+//     13: [5, 12, 14, 20],
+//     14: [2, 13, 23],
+//     15: [6, 11, 16],
+//     16: [15, 17, 19],
+//     17: [8, 12, 16, 20],
+//     18: [3, 10, 19],
+//     19: [16, 18, 20, 22],
+//     20: [5, 13, 19],
+//     21: [0, 9, 22],
+//     22: [19, 21, 23],
+//     23: [2, 14, 22]
+//   };
+
+//   function isAdjacent(from, to) {
+//     return adjacencyList[from] && adjacencyList[from].includes(to);
+//   }
+
+
+//   // Add event listeners to each spot
+//   spots.forEach(spot => {
+//     spot.addEventListener("click", handleSpotClick);
+//   });
+
+//  function handleSpotClick(e) {
+//     const spot = e.target;
+//     const index = parseInt(spot.id.replace("spot-", ""));
+
+//     if (removeMode) {
+      
+//       return;
+//     }
+
+//     if (phase === "placing") {
+      
+//     } else if (phase === "moving") {
+//       // If no piece is selected yet
+//       if (selectedSpot === null) {
+//         // Try to select a piece
+//         if (board[index] === currentPlayer) {
+//           selectedSpot = index;
+//           spot.classList.add("selected"); // Add a class for visual feedback
+//           statusEl.textContent = `⚓ ${capitalize(currentPlayer)}, move piece from spot ${index}.`;
+//         } else if (board[index] === null) {
+//           statusEl.textContent = "Aye, pick one of yer own pieces to move!";
+//         } else {
+//           statusEl.textContent = "Shiver me timbers! That's not yer piece!";
+//         }
+//       } else {
+//         // A piece is already selected, now try to move it
+//         if (selectedSpot === index) { // Clicked the same spot, deselect
+//           spots[selectedSpot].classList.remove("selected");
+//           selectedSpot = null;
+//           statusEl.textContent = `${capitalize(currentPlayer)}'s turn. Deselected piece.`;
+//           return;
+//         }
+//        else if (phase === "flying") {
+//       if (selectedSpot === null) {
+//         if (board[index] === currentPlayer) {
+//           selectedSpot = index;
+//           spot.classList.add("selected");
+//           statusEl.textContent = `Ahoy, ${capitalize(currentPlayer)}, fly yer piece from spot ${index}!`;
+//         } else if (board[index] === null) {
+//           statusEl.textContent = "Ye need to select yer own piece to fly, savvy?";
+//         } else {
+//           statusEl.textContent = "That be a rival's piece, ye can't fly that!";
+//         }
+//       } else {
+//         if (selectedSpot === index) { // Clicked the same spot, deselect
+//           spots[selectedSpot].classList.remove("selected");
+//           selectedSpot = null;
+//           statusEl.textContent = `${capitalize(currentPlayer)}'s turn. Deselected piece.`;
+//           return;
+//         }
+//         if (board[index] === null) { // Any empty spot is valid for flying
+//           board[index] = currentPlayer;
+//           board[selectedSpot] = null;
+
+//           spots[selectedSpot].classList.remove(currentPlayer, "selected");
+//           spot.classList.add(currentPlayer);
+
+//           let message = `${capitalize(currentPlayer)} flew from ${selectedSpot} to ${index}.`;
+
+//           if (checkMill(index, currentPlayer)) {
+//             message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
+//             removeMode = true;
+//             statusEl.textContent = message;
+//           } else {
+//             currentPlayer = getOpponent(currentPlayer);
+//             updateStatus();
+//           }
+//           selectedSpot = null;
+//         } else {
+//           statusEl.textContent = "That spot be taken, scurvy dog! Find an empty one.";
+//         }
+//       }
+//     }
+
+
+
+
+
+//         // Check if the destination spot is empty and adjacent
+//         if (board[index] === null && isAdjacent(selectedSpot, index)) {
+//           // Move the piece
+//           board[index] = currentPlayer;
+//           board[selectedSpot] = null;
+
+//           spots[selectedSpot].classList.remove(currentPlayer, "selected");
+//           spot.classList.add(currentPlayer);
+
+//           let message = `${capitalize(currentPlayer)} moved from ${selectedSpot} to ${index}.`;
+
+//           if (checkMill(index, currentPlayer)) {
+//             message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
+//             removeMode = true;
+//             statusEl.textContent = message;
+//             // No turn change yet, player gets to remove a piece
+//           } else {
+//             currentPlayer = getOpponent(currentPlayer);
+//             updateStatus();
+//           }
+
+//           selectedSpot = null; // Reset selected spot
+//         } else {
+//           statusEl.textContent = "That be an invalid move, scallywag! Spot not empty or not adjacent.";
+//         }
+//       }
+//     }
+//   }
+// });
+
+// // After a piece is removed or moved, check for flying phase
+// function checkGamePhase() {
+//   if (piecesPlaced.player1 === 9 && piecesPlaced.player2 === 9) {
+//     if (player1PiecesOnBoard < 3) {
+//       phase = "flying";
+//       statusEl.textContent = `Arrr, ${capitalize(currentPlayer)} can now FLY!`;
+//     } else if (player2PiecesOnBoard < 3) {
+//       phase = "flying";
+//       statusEl.textContent = `Arrr, ${capitalize(currentPlayer)} can now FLY!`;
+//     } else {
+//       phase = "moving"; // Default to moving if not flying
+//     }
+//   }
+// }
+// // Call checkGamePhase() at the end of handleSpotClick or after any piece movement/removal
+
+// function checkWinCondition() {
+//     const opponent = getOpponent(currentPlayer);
+//     const opponentPieces = board.filter(piece => piece === opponent).length;
+
+//     if (opponentPieces < 3) {
+//       statusEl.textContent = `🏴‍☠️ ${capitalize(currentPlayer)} WINS! The ${capitalize(opponent)} has fewer than 3 pieces!`;
+//       // Disable further moves or show a restart button
+//       disableBoardClicks(); // You'd need to implement this
+//       return true;
+//     }
+
+//     // Check if the opponent has any valid moves (only relevant in moving/flying phase)
+//     if (phase === "moving" || phase === "flying") {
+//       let hasValidMove = false;
+//       for (let i = 0; i < board.length; i++) {
+//         if (board[i] === opponent) { // Check each of opponent's pieces
+//           const possibleMoves = adjacencyList[i] || [];
+//           if (phase === "flying") { // If flying, any empty spot is a valid move
+//             if (board.includes(null)) {
+//                 hasValidMove = true;
+//                 break;
+//             }
+//           } else { // Moving phase, check adjacent empty spots
+//             for (const adjSpot of possibleMoves) {
+//               if (board[adjSpot] === null) {
+//                 hasValidMove = true;
+//                 break;
+//               }
+//             }
+//           }
+//         }
+//         if (hasValidMove) break;
+//       }
+
+//       if (!hasValidMove) {
+//         statusEl.textContent = `🏴‍☠️ ${capitalize(currentPlayer)} WINS! The ${capitalize(opponent)} has no legal moves!`;
+//         disableBoardClicks();
+//         return true;
+//       }
+//     }
+//     return false;
+//   }
+
+//   function disableBoardClicks() {
+//     spots.forEach(spot => {
+//       spot.removeEventListener("click", handleSpotClick);
+//       spot.style.cursor = "not-allowed";
+//     });
+//   }
+
+// const restartButton = document.getElementById("restartButton");
+//   restartButton.addEventListener("click", resetGame);
+
+//   function resetGame() {
+//     board.fill(null);
+//     spots.forEach(spot => {
+//       spot.classList.remove("player1", "player2", "selected");
+//       spot.addEventListener("click", handleSpotClick); // Re-add listeners
+//       spot.style.cursor = "pointer";
+//     });
+//     currentPlayer = "player1";
+//     phase = "placing";
+//     removeMode = false;
+//     piecesPlaced.player1 = 0;
+//     piecesPlaced.player2 = 0;
+//     player1PiecesOnBoard = 0; // Reset these too
+//     player2PiecesOnBoard = 0;
+//     selectedSpot = null;
+//     updateStatus();
+//     restartButton.style.display = "none";
+//   }
+
+  // In checkWinCondition, when a win is detected:
+  // restartButton.style.display = "block";
 
 
 // --------------------- NEED TO DO----------------------------------
