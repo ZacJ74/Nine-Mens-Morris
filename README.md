@@ -6,7 +6,7 @@
 
 ## About the Game
 
-Nine Men's Morris is a two-player strategy game.
+Nine Men's Morris is a classic two-player strategy board game played on a grid of three concentric squares connected by lines, with a total of 24 playable spots. Each player starts with nine pieces, with the ultimate goal of reducing their oppenent to 2 or less pieces, or disallowing them from making any more legal moves.
 
 The game is played in three distinct phases:
 
@@ -62,9 +62,7 @@ This project is currently **in development**. The core `placing` and `moving` ph
 * **Improved AI Opponent:** Develop a challenging AI that can play against the human player.
 * **Sound Effects:** Add thematic sounds for piece placement, mill formation, and victories.
 * **Animations:** Smooth animations for piece movement and removal.
-* **Thematic Assets:** More intricate pirate/Caribbean themed graphics for pieces and board elements.
 * **Responsive Layout Refinements:** Ensure optimal play experience across all device sizes.
-* **Two-Player Local Mode:** (If not already implemented implicitly) Clearly define two-player local play.
 * **Rules Enforcement:** More sophisticated rules for piece removal (e.g., not allowing removal of a piece in a mill if other pieces are available).
 * **Undo/Redo Functionality:** For strategic analysis.
 
