@@ -4,7 +4,8 @@
 
 ![Second game board screenshot](assets/MidPlay.jpeg)
 
-Currently working on getting the third screenshot.
+NOTE: HTML and CSS are not finalized, this is meant to be a rough outline of how I want the game board to look.
+
 ## Table of Contents
 
 
@@ -21,6 +22,19 @@ The game is played in three distinct phases:
 
 Forming a "mill" (three of your pieces in a row along any line) allows you to remove one of your opponent's pieces from the board. The game ends when one player has fewer than three pieces, or is unable to make any legal moves.
 
+
+## User Stories
+
+* **As a player,** I want to click an empty spot to place my piece.
+* **As a player,** I want to be visually shown when I form a mill.
+* **As a player,** I want to click an opponent's piece to remove it after forming a mill.
+* **As a player,** I want to select my piece and move it to an adjacent empty spot once all pieces are placed.
+* **As a player,** I want to "fly" my pieces to any empty spot when I have only three pieces left.
+* **As a player,** I want the game to clearly announce when a winner is determined.
+* **As a player,** I want a "Play Again" button to easily restart the game.
+* **As a player,** I want the game's interface to reflect a pirate theme.
+
+
 ## Features
 
 * **Classic Nine Men's Morris Gameplay:** Fully implements the three phases: placing, moving, and flying.
@@ -35,9 +49,17 @@ Forming a "mill" (three of your pieces in a row along any line) allows you to re
 * **CSS** 
 * **JavaScript**
 
-## Getting Started
+## Minimum Viable Product (MVP)
 
-
+* **Game Board UI:** A clean, interactive interface displaying the 24 playable spots, connecting lines, and player pieces. The UI will also show the current player's turn and game status messages.
+* **Game State Management:** The application will track the board's current state (which spots are occupied by which player), the current game phase (placing, moving, flying), and each player's piece counts.
+* **Two-Player Turn Logic:**
+    * **Placing Phase:** Players take turns placing their 9 pieces onto empty spots.
+    * **Mill Formation & Capture:** When a mill is formed, the current player is prompted to remove one of the opponent's non-mill pieces.
+    * **Moving Phase:** Once all pieces are placed, players take turns selecting one of their pieces and moving it to an adjacent, empty spot.
+    * **Flying Phase:** When a player is reduced to 3 pieces, they gain the ability to move their pieces to any empty spot.
+* **Win/Loss Declaration:** At the end of the game, a clear message will announce the winner (either by reducing the opponent to fewer than 3 pieces or by blocking all their legal moves).
+* **Reset Game:** A "Play Again" button will be available to reset the game board and state, allowing for new matches.
 
 ### How to Play
 

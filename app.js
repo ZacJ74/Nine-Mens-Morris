@@ -260,6 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return; // Exit function after handling flying phase
     }
   }
+  
   // Checks if a mill is formed at a given position for a player
   function checkMill(pos, player) {
     return millCombos
