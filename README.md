@@ -74,7 +74,8 @@ Forming a "mill" (three of your pieces in a row along any line) allows you to re
 
 ## Project Status
 
-This project is currently **in development**. The core `placing` and `moving` phases are implemented, along with mill detection and piece removal. The `flying` phase and comprehensive win condition checks are underway.
+This project is currently **in development**. 
+
 ## Future Enhancements
 
 * **Improved AI Opponent:** Develop a challenging AI that can play against the human player.
