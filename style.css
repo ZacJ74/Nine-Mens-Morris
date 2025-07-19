@@ -90,3 +90,17 @@ body {
 .line.vertical {
   width: 3px;
 }
+
+#restartButton {
+    display: none; 
+    /* Add any other styling for your button here */
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: #4CAF50; /* Example color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-family: 'Pirata One', cursive; 
+}

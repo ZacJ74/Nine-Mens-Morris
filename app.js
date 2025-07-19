@@ -319,13 +319,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Check if the opponent has any valid moves (only relevant in moving/flying phase)
+    // Checks if the opponent has any valid moves (only relevant in moving/flying phase)
     if (phase === "moving" || phase === "flying") {
       let hasValidMove = false;
       for (let i = 0; i < board.length; i++) {
-        if (board[i] === opponent) { // Check each of opponent's pieces
+        if (board[i] === opponent) { // Checks each of opponent's pieces
           if (phase === "flying") {
-            // If flying, and there's an empty spot, they can move
+            // If flying, and there's an empty spot, they can move 
             if (board.includes(null)) {
               hasValidMove = true;
               break;
@@ -364,7 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
     board.fill(null);
     spots.forEach(spot => {
       spot.classList.remove("player1", "player2", "selected");
-      spot.addEventListener("click", handleSpotClick); // Re-add listeners
+      spot.addEventListener("click", handleSpotClick); // Re-added listeners
       spot.style.cursor = "pointer";
     });
     currentPlayer = "player1";
