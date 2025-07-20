@@ -41,32 +41,193 @@ document.addEventListener("DOMContentLoaded", () => {
     [8, 12, 17] // Right side vertical
   ];
 
-  const adjacencyList = {
+const adjacencyList = {
+    // Outer Square
     0: [1, 9],
-    1: [0, 2, 4],
+    1: [0, 2, 4], // Connects to 0, 2 horizontally, and 4 (mid-point of horizontal outer)
     2: [1, 14],
-    3: [4, 10],
-    4: [1, 3, 5, 7],
-    5: [4, 13],
-    6: [7, 11],
-    7: [4, 6, 8],
+    3: [4, 10], // Connects to 4 horizontally, and 10 (middle-square mid-left) - This is where your labels and connections get tricky!
+
+    // IMPORTANT: Your HTML has spot 4 at top: 235px; right: 25px;
+    // And spot 3 at top: 235px; left: 25px;
+    // These are *mid-points* of the horizontal lines of the outer square.
+    // They connect to 1, 7 etc. through mid-points.
+    // Let's assume your HTML numbering is:
+    // Row 1: 0, 1, 2
+    // Row 2: 3, (center), 4
+    // Row 3: 5, 6, 7
+
+    // Based on standard layouts AND your CSS values for connections between squares:
+    // Mid-line connectors:
+    // Vertical line connecting 1 (outer top-mid) -> 9 (mid top-mid) -> 17 (inner top-mid)
+    // Vertical line connecting 6 (outer bottom-mid) -> 14 (mid bottom-mid) -> 22 (inner bottom-mid)
+    // Horizontal line connecting 3 (outer mid-left) -> 11 (mid mid-left) -> 19 (inner mid-left)
+    // Horizontal line connecting 4 (outer mid-right) -> 12 (mid mid-right) -> 20 (inner mid-right)
+
+    // REVISED ADJACENCY LIST BASED ON YOUR VISUAL LAYOUT
+    0: [1, 9],
+    1: [0, 2, 4], // Spot 4 is the middle of the board's horizontal line
+    2: [1, 14],
+    3: [4, 10], // Spot 4 is the middle of the board's horizontal line
+    4: [1, 3, 5, 7], // Spot 4 is the absolute center of the outer horizontal lines
+    5: [4, 13], // Spot 4 is the middle of the board's horizontal line
+    6: [7, 14], // Connects to 7 horizontally, and 14 (middle square bottom-mid)
+    7: [4, 6, 8], // Spot 4 is the middle of the board's horizontal line
     8: [7, 12],
-    9: [0, 10, 21],
-    10: [3, 9, 11, 18],
-    11: [6, 10, 15],
-    12: [8, 13, 17],
-    13: [5, 12, 14, 20],
-    14: [2, 13, 23],
-    15: [6, 11, 16],
-    16: [15, 17, 19],
-    17: [8, 12, 16, 20],
-    18: [3, 10, 19],
-    19: [16, 18, 20, 22],
-    20: [5, 13, 19],
-    21: [0, 9, 22],
-    22: [19, 21, 23],
-    23: [2, 14, 22]
+
+    // Middle Square
+    9: [0, 10, 17, 21], // 0 (outer top-left), 10 (mid-sq top-right), 17 (mid-sq top-mid from CSS), 21 (inner top-left)
+                       // Wait, your previous adjacency was 0, 10, 21. If 9 is middle-square top-left corner, it connects to 0 (outer), 10 (horizontal), 21 (vertical to inner).
+                       // But then `top: 95px; left: 235px;` for 9 is actually the *middle* of the middle square's top line.
+                       // This is where the core mismatch is. Your HTML numbering for middle/inner squares is not standard.
+
+    // Let's re-evaluate based on the CSS positions of the spots ONLY.
+    // Outer (top-left, top-mid, top-right, mid-left, mid-right, bottom-left, bottom-mid, bottom-right)
+    // 0: 25,25   1: 25,235   2: 25,440
+    // 3: 235,25             4: 235,440
+    // 5: 440,25   6: 440,235   7: 440,440
+
+    // Middle (top-left, top-mid, top-right, etc.)
+    // 8: 95,95   9: 95,235   10: 95,370
+    // 11: 235,95             12: 235,370
+    // 13: 370,95   14: 370,235   15: 370,370
+
+    // Inner (top-left, top-mid, top-right, etc.)
+    // 16: 165,165   17: 165,235   18: 165,300
+    // 19: 235,165             20: 235,300
+    // 21: 300,165   22: 300,235   23: 300,300
+
+    // Corrected Adjacency List based *strictly* on these HTML positions:
+    // This will replace your current adjacencyList entirely.
+    0: [1, 3], // Top-left outer corner (connects to top-mid and mid-left)
+    1: [0, 2, 9], // Top-mid outer (connects to left, right, and mid-mid of middle square)
+    2: [1, 4], // Top-right outer corner (connects to top-mid and mid-right)
+
+    3: [0, 5, 11], // Mid-left outer (connects to top-left, bottom-left, and mid-mid of middle square)
+    4: [2, 7, 12], // Mid-right outer (connects to top-right, bottom-right, and mid-mid of middle square)
+
+    5: [3, 6], // Bottom-left outer corner (connects to mid-left and bottom-mid)
+    6: [5, 7, 14], // Bottom-mid outer (connects to left, right, and mid-mid of middle square)
+    7: [4, 6], // Bottom-right outer corner (connects to mid-right and bottom-mid)
+    // Note: The above (0-7) don't have lines to all others. They only connect to their immediate neighbors and the inner square.
+    // Let's re-think the outer square entirely based on standard 9MM. It has 8 points. Your HTML has 8 spots: 0,1,2,3,4,5,6,7.
+    // 0,1,2 form a top line. 5,6,7 form a bottom line. 0,3,5 form left. 2,4,7 form right.
+    // Then 1, 6, 3, 4 connect to the middle of the board.
+
+    // Let's use the standard 9MM layout mapping to your HTML IDs:
+    // Corners: 0, 2, 5, 7
+    // Mid-points of sides: 1, 3, 4, 6 (these are where the cross-lines should connect)
+
+    // Standard 9MM Adjacency Map for 0-23
+    // Outer Square (8 spots)
+    0: [1, 3, 9],      // Top-left outer. Correct based on your new console log (Selected Spot 14, target 6)
+    1: [0, 2, 4],      // Top-middle outer
+    2: [1, 5, 14],     // Top-right outer
+
+    3: [0, 6, 10],     // Left-middle outer
+    4: [1, 7, 12],     // Right-middle outer (Your HTML calls this spot 4, but it's on the right)
+
+    5: [2, 8, 13],     // Bottom-right outer (Your HTML has this as `bottom: 25px; left: 25px;` so it's bottom-left)
+    6: [3, 7, 11],     // Bottom-middle outer (Your HTML: `bottom: 25px; left: 235px;`)
+    7: [4, 6, 15],     // Bottom-right outer (Your HTML: `bottom: 25px; right: 25px;`)
+    // ^^^ THIS IS THE PROBLEM. Your HTML IDs 3,4,5,6,7 are not standard for a board that has 0-23.
+    // You have 8 spots for the outer square: 0, 1, 2, 3, 4, 5, 6, 7.
+    // Based on their `top`/`left`/`right`/`bottom` in HTML:
+    // Outer Square
+    // Top-row: spot-0 (TL), spot-1 (TM), spot-2 (TR)
+    // Mid-row: spot-3 (ML),             spot-4 (MR)
+    // Bottom-row: spot-5 (BL), spot-6 (BM), spot-7 (BR)
+
+    // Okay, let's build the adjacency list *EXACTLY* based on your HTML's visual structure.
+    // This is the most crucial part.
+
+    // Outer Square (0-7)
+    // 0 is (25,25)  1 is (25,235)  2 is (25,440)
+    // 3 is (235,25)               4 is (235,440)
+    // 5 is (440,25)  6 is (440,235)  7 is (440,440)
+
+    // Mid-Square (8-15)
+    // 8 is (95,95)   9 is (95,235)  10 is (95,370)
+    // 11 is (235,95)              12 is (235,370)
+    // 13 is (370,95)  14 is (370,235)  15 is (370,370)
+
+    // Inner Square (16-23)
+    // 16 is (165,165) 17 is (165,235) 18 is (165,300)
+    // 19 is (235,165)             20 is (235,300)
+    // 21 is (300,165) 22 is (300,235) 23 is (300,300)
+
+    // Let's create the adjacency list from scratch based on these visual connections:
+    // Each spot connects horizontally and vertically to its immediate neighbors on the same square.
+    // The "mid-line connectors" div are the key to cross-square connections.
+
+    // Cross-Square Connections via the "mid-line connectors":
+    // `vertical` at `left: 250px;` connects (visually) outer top-middle (1) to middle top-middle (9) to inner top-middle (17)
+    // `vertical` at `left: 250px;` connects (visually) outer bottom-middle (6) to middle bottom-middle (14) to inner bottom-middle (22)
+    // `horizontal` at `top: 250px;` connects (visually) outer mid-left (3) to middle mid-left (11) to inner mid-left (19)
+    // `horizontal` at `top: 250px;` connects (visually) outer mid-right (4) to middle mid-right (12) to inner mid-right (20)
+
+    0: [1, 3], // Outer TL to TM, ML
+    1: [0, 2, 9], // Outer TM to TL, TR, Mid-TM (9)
+    2: [1, 4], // Outer TR to TM, MR
+
+    3: [0, 5, 11], // Outer ML to TL, BL, Mid-ML (11)
+    4: [2, 7, 12], // Outer MR to TR, BR, Mid-MR (12)
+
+    5: [3, 6], // Outer BL to ML, BM
+    6: [5, 7, 14], // Outer BM to BL, BR, Mid-BM (14)
+    7: [4, 6], // Outer BR to MR, BM
+
+    // Middle Square (Corners, then Middles)
+    8: [9, 11, 16], // Mid-TL to TM, ML, Inner-TL (16)
+    9: [1, 8, 10, 17], // Mid-TM to Outer-TM (1), Mid-TL, Mid-TR, Inner-TM (17)
+    10: [9, 12, 18], // Mid-TR to TM, MR, Inner-TR (18)
+
+    11: [3, 8, 13, 19], // Mid-ML to Outer-ML (3), Mid-TL, Mid-BL, Inner-ML (19)
+    12: [4, 10, 15, 20], // Mid-MR to Outer-MR (4), Mid-TR, Mid-BR, Inner-MR (20)
+
+    13: [11, 14, 21], // Mid-BL to ML, BM, Inner-BL (21)
+    14: [6, 13, 15, 22], // Mid-BM to Outer-BM (6), Mid-BL, Mid-BR, Inner-BM (22)
+    15: [12, 14, 23], // Mid-BR to MR, BM, Inner-BR (23)
+
+    // Inner Square (Corners, then Middles)
+    16: [17, 19, 8], // Inner-TL to TM, ML, Mid-TL (8)
+    17: [9, 16, 18, 22], // Inner-TM to Mid-TM (9), Inner-TL, Inner-TR, Inner-BM (22)
+    18: [17, 20, 10], // Inner-TR to TM, MR, Mid-TR (10)
+
+    19: [16, 21, 11], // Inner-ML to TL, BL, Mid-ML (11)
+    20: [18, 23, 12], // Inner-MR to TR, BR, Mid-MR (12)
+
+    21: [19, 22, 13], // Inner-BL to ML, BM, Mid-BL (13)
+    22: [17, 21, 23, 14], // Inner-BM to TM, BL, BR, Mid-BM (14)
+    23: [20, 22, 15]  // Inner-BR to MR, BM, Mid-BR (15)
   };
+
+  // const adjacencyList = {
+  //   0: [1, 9],
+  //   1: [0, 2, 4],
+  //   2: [1, 14],
+  //   3: [4, 10],
+  //   4: [1, 3, 5, 7],
+  //   5: [4, 13],
+  //   6: [7, 11],
+  //   7: [4, 6, 8],
+  //   8: [7, 12],
+  //   9: [0, 10, 21],
+  //   10: [3, 9, 11, 18],
+  //   11: [6, 10, 15],
+  //   12: [8, 13, 17],
+  //   13: [5, 12, 14, 20],
+  //   14: [2, 13, 23],
+  //   15: [6, 11, 16],
+  //   16: [15, 17, 19],
+  //   17: [8, 12, 16, 20],
+  //   18: [3, 10, 19],
+  //   19: [16, 18, 20, 22],
+  //   20: [5, 13, 19],
+  //   21: [0, 9, 22],
+  //   22: [19, 21, 23],
+  //   23: [2, 14, 22]
+  // };
 
   function isAdjacent(from, to) {
     return adjacencyList[from] && adjacencyList[from].includes(to);
@@ -178,16 +339,19 @@ document.addEventListener("DOMContentLoaded", () => {
           updateStatus(); // Update status back to current player's turn
           return;
         }
+         
+        // added these console logs to help with debugging
+        console.log("--- DEBUGGING MOVE ATTEMPT ---");
+        console.log("Current Player:", currentPlayer);
+        console.log("Selected Spot (from):", selectedSpot);
+        console.log("Target Spot (to):", index);
+        console.log("Is Target Spot EMPTY? (board[index] === null):", board[index] === null);
+        console.log("Is Target Spot ADJACENT? (isAdjacent(selectedSpot, index)):", isAdjacent(selectedSpot, index));
+        console.log("Adjacency List for 'from' spot:", adjacencyList[selectedSpot]);
+        console.log("Value at Target Spot (board[index]):", board[index]);
+        console.log("-------------------------------");
 
-        
-        // Addeed these console logs to help with debugging
-        console.log("--- Attempting Move ---");
-        console.log("Selected piece at index:", selectedSpot, " (Player:", board[selectedSpot], ")");
-        console.log("Target spot at index:", index, " (Content:", board[index], ")");
-        console.log("Is target spot empty? (board[index] === null):", board[index] === null);
-        console.log("Is target spot adjacent? (isAdjacent(selectedSpot, index)):", isAdjacent(selectedSpot, index));
-        console.log("Adjacency List for selectedSpot:", adjacencyList[selectedSpot]);
-
+    
 
         if (board[index] === null && isAdjacent(selectedSpot, index)) {
           board[index] = currentPlayer;
