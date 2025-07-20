@@ -6,7 +6,6 @@
 
 ![third game board screenshot](assets/endgame.jpeg)
 
-NOTE: HTML and CSS are not finalized, this is meant to be a rough outline of how I want the game board to look.
 
 ## Table of Contents
 
@@ -31,10 +30,9 @@ Forming a "mill" (three of your pieces in a row along any line) allows you to re
 * **As a player,** I want to be visually shown when I form a mill.
 * **As a player,** I want to click an opponent's piece to remove it after forming a mill.
 * **As a player,** I want to select my piece and move it to an adjacent empty spot once all pieces are placed.
-* **As a player,** I want to "fly" my pieces to any empty spot when I have only three pieces left.
 * **As a player,** I want the game to clearly announce when a winner is determined.
 * **As a player,** I want a "Play Again" button to easily restart the game.
-* **As a player,** I want the game's interface to reflect a pirate theme.
+
 
 
 ## Features
