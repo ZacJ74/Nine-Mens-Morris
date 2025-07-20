@@ -1,8 +1,10 @@
 # Nine Men's Morris: Caribbean Conquest! 🏴‍☠️
 
-![First game board screenshot](assets/3271966E-7FB7-4D7A-9CA2-387E029E6D24.jpeg)
+![First game board screenshot](assets/StartScreen.jpeg)
 
-![Second game board screenshot](assets/MidPlay.jpeg)
+![Second game board screenshot](assets/mid.jpeg)
+
+![third game board screenshot](assets/endgame.jpeg)
 
 NOTE: HTML and CSS are not finalized, this is meant to be a rough outline of how I want the game board to look.
 
@@ -80,8 +82,7 @@ This project is currently **in development**.
 
 * **Improved AI Opponent:** Develop a challenging AI that can play against the human player.
 * **Sound Effects:** Add thematic sounds for piece placement, mill formation, and victories.
-* **Animations:** Smooth animations for piece movement and removal.
-* **Rules Enforcement:** More sophisticated rules for piece removal (e.g., not allowing removal of a piece in a mill if other pieces are available).
+* **Animations:** Smooth animations for piece movement and removal
 * **Undo/Redo Functionality:** 
 
 

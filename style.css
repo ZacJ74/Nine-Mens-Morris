@@ -21,6 +21,12 @@ body {
   background-color: #f0f0f0;
   color: #333;
   text-align: center;
+    background-color: #6d4c41; 
+    background-image: url('assets/Weathered page backround.jpeg'); 
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    background-position: center center; 
+    background-attachment: fixed; 
   margin: 0;
   padding: 20px;
 }

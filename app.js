@@ -1,6 +1,5 @@
 
 
-
 document.addEventListener("DOMContentLoaded", () => {
   const board = Array(24).fill(null);
   let currentPlayer = "player1";
@@ -307,19 +306,19 @@ const adjacencyList = {
     const prevPhase = phase; // Store current phase to detect if it changed
     // Only transition to moving/flying if all 9 pieces are placed by both players
     if (piecesPlaced.player1 === 9 && piecesPlaced.player2 === 9) {
-      // Determine if *current* player (whose turn it is next, or who just acted) can fly
+      // Determines if current player (whose turn it is next, or who just acted) can fly
       const currentPlayersPieceCount = (currentPlayer === "player1") ? player1PiecesOnBoard : player2PiecesOnBoard;
       const opponentPlayersPieceCount = (getOpponent(currentPlayer) === "player1") ? player1PiecesOnBoard : player2PiecesOnBoard;
 
       if (currentPlayersPieceCount < 3 || opponentPlayersPieceCount < 3) {
         phase = "flying";
-        // Do not update status here, let the calling handleSpotClick decide
+        
       } else {
         phase = "moving";
-        // Do not update status here
+        
       }
     }
-    // No updateStatus() call here!
+    
   }
 
   function checkWinCondition() {
