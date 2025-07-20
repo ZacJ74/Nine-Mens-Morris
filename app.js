@@ -18,30 +18,53 @@ document.addEventListener("DOMContentLoaded", () => {
     player1: 0,
     player2: 0
   };
+// updated mill combos list
+const millCombos = [
+    // --- Horizontal Mills ---
+    [0, 1, 2],   // Outer Top
+    [5, 6, 7],   // Outer Bottom
 
-  const millCombos = [
-    // Horizontal Mills
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8], // Outer Square
-    [9, 10, 11],
-    [12, 13, 14],
-    [15, 16, 17], // Middle Square
-    [18, 19, 20],
-    [21, 22, 23], // Inner Square
+    [8, 9, 10],  // Middle Top
+    [13, 14, 15], // Middle Bottom
 
-    // Vertical Mills
-    [0, 9, 21],
-    [3, 10, 18],
-    [6, 11, 15], // Left side vertical
-    [1, 4, 7], // Middle vertical on outer board
-    [16, 19, 22], // Middle vertical on inner board
-    [2, 14, 23],
-    [5, 13, 20],
-    [8, 12, 17] // Right side vertical
+    [16, 17, 18], // Inner Top
+    [21, 22, 23], // Inner Bottom
+
+    // --- Vertical Mills ---
+    [0, 3, 5],   // Outer Left
+    [8, 11, 13], // Middle Left
+    [16, 19, 21], // Inner Left
+
+    [1, 9, 17],  // Vertical Through Top-Middle
+    [6, 14, 22], // Vertical Through Bottom-Middle
+
+    [2, 4, 7],   // Outer Right
+    [10, 12, 15], // Middle Right
+    [18, 20, 23]  // Inner Right
   ];
+  // const millCombos = [
+  //   // Horizontal Mills
+  //   [0, 1, 2],
+  //   [3, 4, 5],
+  //   [6, 7, 8], // Outer Square
+  //   [9, 10, 11],
+  //   [12, 13, 14],
+  //   [15, 16, 17], // Middle Square
+  //   [18, 19, 20],
+  //   [21, 22, 23], // Inner Square
 
-  // updated a
+  //   // Vertical Mills
+  //   [0, 9, 21],
+  //   [3, 10, 18],
+  //   [6, 11, 15], // Left side vertical
+  //   [1, 4, 7], // Middle vertical on outer board
+  //   [16, 19, 22], // Middle vertical on inner board
+  //   [2, 14, 23],
+  //   [5, 13, 20],
+  //   [8, 12, 17] // Right side vertical
+  // ];
+
+  // updated the adjacency list
 const adjacencyList = {
     // Outer Square
     0: [1, 3], // Outer Top-Left
