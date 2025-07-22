@@ -2,7 +2,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   const board = Array(24).fill(null);
-  let currentPlayer = "player1";
+  let currentPlayer = "player1"; // player 1-red, player 2-blue
   let phase = "placing";
   let removeMode = false;
   let selectedSpot = null;
@@ -298,27 +298,37 @@ const adjacencyList = {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
-  function updateStatus(message = null) {
-    statusEl.textContent = message ? message + ` ${capitalize(currentPlayer)}'s turn.` : `${capitalize(currentPlayer)}'s turn.`;
+ function updateStatus(message = null) {
+    let baseStatus = "";
+    if (phase === "placing") {
+        baseStatus = `${capitalize(currentPlayer)}'s turn to place.`;
+    } else if (phase === "moving") {
+        baseStatus = `${capitalize(currentPlayer)}'s turn to move.`;
+    } else if (phase === "flying") {
+        baseStatus = `🏴‍☠️ ${capitalize(currentPlayer)}'s turn to FLY!`; // added specific message for flying
+    }
+    statusEl.textContent = message ? `${message} ${baseStatus}` : baseStatus;
   }
 
-  function checkGamePhase() {
-    const prevPhase = phase; // Store current phase to detect if it changed
-    // Only transition to moving/flying if all 9 pieces are placed by both players
-    if (piecesPlaced.player1 === 9 && piecesPlaced.player2 === 9) {
-      // Determines if current player (whose turn it is next, or who just acted) can fly
-      const currentPlayersPieceCount = (currentPlayer === "player1") ? player1PiecesOnBoard : player2PiecesOnBoard;
-      const opponentPlayersPieceCount = (getOpponent(currentPlayer) === "player1") ? player1PiecesOnBoard : player2PiecesOnBoard;
+ function checkGamePhase() { 
+    
+    if (piecesPlaced.player1 === 9 && piecesPlaced.player2 === 9) { 
+      
+      const p1Pieces = player1PiecesOnBoard;
+      const p2Pieces = player2PiecesOnBoard;
 
-      if (currentPlayersPieceCount < 3 || opponentPlayersPieceCount < 3) {
+      // Determines if either player has EXACTLY 3 pieces remaining
+      const player1CanFly = (p1Pieces === 3);
+      const player2CanFly = (p2Pieces === 3);
+
+      // If either player has exactly 3 pieces (and the game hasn't ended, which checkWinCondition handles)
+      // then the phase should be flying. Otherwise, it's moving.
+      if (player1CanFly || player2CanFly) {
         phase = "flying";
-        
       } else {
         phase = "moving";
-        
       }
     }
-    
   }
 
   function checkWinCondition() {
@@ -377,7 +387,7 @@ const adjacencyList = {
     });
   }
 
-  function resetGame() {
+  function resetGame() { 
     board.fill(null);
     spots.forEach(spot => {
       spot.classList.remove("player1", "player2", "selected");
