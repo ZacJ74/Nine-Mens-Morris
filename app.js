@@ -3,11 +3,12 @@
 document.addEventListener("DOMContentLoaded", () => {
   const board = Array(24).fill(null);
   let currentPlayer = "player1"; // player 1-red, player 2-blue
-  let phase = "placing";
-  let removeMode = false;
-  let selectedSpot = null;
-  let player1PiecesOnBoard = 0;
-  let player2PiecesOnBoard = 0;
+  let phase = "placing"; 
+  let removeMode = false; // Tracks if it's in removal mode
+  let selectedSpot = null; // Tracks the currently selected spot for moving/flying
+  let player1PiecesOnBoard = 0; // Tracks pieces on the board for each player
+  let player2PiecesOnBoard = 0; // Tracks pieces on the board for each player
+  let millsToRemove = 0; // Tracks how many mills have been formed
 
   const statusEl = document.getElementById("status");
   const spots = document.querySelectorAll(".spot");
@@ -132,13 +133,24 @@ const adjacencyList = {
         } else {
           player2PiecesOnBoard--;
         }
-        removeMode = false;
 
-        // Check for win condition immediately after removal
-        if (checkWinCondition()) return;
+        millsToRemove--; // DECREMENT THE REMOVAL COUNT
 
-        currentPlayer = getOpponent(currentPlayer); // Opponent's turn after removal
-        updateStatus(); // Update status for the next player
+        // Check if there are more pieces to remove from this mill formation
+        if (millsToRemove > 0) {
+            statusEl.textContent = `🎉 You formed another mill! Remove ${millsToRemove} more opponent piece(s).`;
+            // Keep removeMode as true, and don't change player
+        } else {
+            removeMode = false; // All removals are done
+            // Check for win condition immediately after removal (after final removal)
+            if (checkWinCondition()) return;
+
+            // Update game phase (will check for flying)
+            checkGamePhase();
+
+            currentPlayer = getOpponent(currentPlayer); // Opponent's turn after ALL removals
+            updateStatus(); // Update status for the next player
+        }
       } else {
         statusEl.textContent = "❌ You must remove an opponent's piece.";
       }
@@ -169,12 +181,18 @@ const adjacencyList = {
 
       let message = `${capitalize(currentPlayer)} placed at spot ${index}.`;
 
-      if (checkMill(index, currentPlayer)) {
-        message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
+      const millsFormed = countMillsAtPosition(index, currentPlayer); // Use the new function
+      if (millsFormed > 0) {
+        let millMessage = `🎉 ${capitalize(currentPlayer)} formed a MILL!`;
+        if (millsFormed > 1) {
+            millMessage += ` You get to remove ${millsFormed} of your opponent's pieces!`;
+        } else {
+            millMessage += ` Remove one of your opponent's pieces.`;
+        }
         removeMode = true;
-        statusEl.textContent = message; // Set specific message for mill
-        // Do NOT change player, as they get another move (removal)
-        return;
+        millsToRemove = millsFormed; // Store the number of removals granted
+        statusEl.textContent = millMessage;
+        return; // Stay on current player's turn for removal
       }
 
       // Check for phase change after placement, then for win condition
@@ -215,10 +233,17 @@ const adjacencyList = {
 
           let message = `${capitalize(currentPlayer)} moved from ${selectedSpot} to ${index}.`;
 
-          if (checkMill(index, currentPlayer)) {
-            message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
+          const millsFormed = countMillsAtPosition(index, currentPlayer); // Use the new function
+          if (millsFormed > 0) {
+            let millMessage = `🎉 ${capitalize(currentPlayer)} formed a MILL!`;
+            if (millsFormed > 1) {
+                millMessage += ` You get to remove ${millsFormed} of your opponent's pieces!`;
+            } else {
+                millMessage += ` Remove one of your opponent's pieces.`;
+            }
             removeMode = true;
-            statusEl.textContent = message;
+            millsToRemove = millsFormed; // Store the number of removals granted
+            statusEl.textContent = millMessage;
             // Do NOT change player, as they get another move (removal)
           } else {
             // After moving, check for phase change and win condition
@@ -264,10 +289,17 @@ const adjacencyList = {
 
           let message = `${capitalize(currentPlayer)} flew from ${selectedSpot} to ${index}.`;
 
-          if (checkMill(index, currentPlayer)) {
-            message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
+          const millsFormed = countMillsAtPosition(index, currentPlayer); // Use the new function
+          if (millsFormed > 0) {
+            let millMessage = `🎉 ${capitalize(currentPlayer)} formed a MILL!`;
+            if (millsFormed > 1) {
+                millMessage += ` You get to remove ${millsFormed} of your opponent's pieces!`;
+            } else {
+                millMessage += ` Remove one of your opponent's pieces.`;
+            }
             removeMode = true;
-            statusEl.textContent = message;
+            millsToRemove = millsFormed; // Store the number of removals granted
+            statusEl.textContent = millMessage;
           } else {
             // After flying, check for phase change and win condition
             checkGamePhase();
@@ -275,6 +307,7 @@ const adjacencyList = {
             currentPlayer = getOpponent(currentPlayer);
             updateStatus();
           }
+
           selectedSpot = null;
         } else {
           statusEl.textContent = "That spot be taken, scurvy dog! Find an empty one.";
@@ -284,10 +317,18 @@ const adjacencyList = {
     }
   }
 
-  function checkMill(pos, player) {
-    return millCombos
-      .filter(combo => combo.includes(pos))
-      .some(combo => combo.every(i => board[i] === player));
+  // Counts how many mills are formed involving a given position for a player
+  function countMillsAtPosition(pos, player) {
+    let millsDetected = 0;
+    millCombos
+      .filter(combo => combo.includes(pos)) // Filters for combos that *include* the piece at 'pos'
+      .forEach(combo => {
+        if (combo.every(i => board[i] === player)) {
+         
+          millsDetected++;
+        }
+      });
+    return millsDetected;
   }
 
   function getOpponent(player) {
@@ -402,6 +443,7 @@ const adjacencyList = {
     player1PiecesOnBoard = 0;
     player2PiecesOnBoard = 0;
     selectedSpot = null;
+    millsToRemove = 0;
     updateStatus();
     restartButton.style.display = "none";
   }
