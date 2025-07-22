@@ -7,11 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let player1PiecesOnBoard = 0;
   let player2PiecesOnBoard = 0;
 
-  const statusEl = document.getElementById("status");
-  const spots = document.querySelectorAll(".spot");
-  const restartButton = document.getElementById("restartButton");
-  const instructionsToggle = document.getElementById('instructionsToggle');
-  const instructionsContent = document.getElementById('instructionsContent');
+  const statusEl = document.getElementById("status"); // Status message element
+  const spots = document.querySelectorAll(".spot"); // All game spots
+  const restartButton = document.getElementById("restartButton"); // restart button element
+  const instructionsToggle = document.getElementById('instructionsToggle'); // instructions button toggle
+  const instructionsContent = document.getElementById('instructionsContent'); // content in the instructions
 
   instructionsToggle.addEventListener('click', () => {
     instructionsContent.classList.toggle('show');
@@ -93,11 +93,11 @@ const adjacencyList = {
   };
 
   function isAdjacent(from, to) {
-    return adjacencyList[from] && adjacencyList[from].includes(to);
+    return adjacencyList[from] && adjacencyList[from].includes(to); // 
   }
 
   spots.forEach(spot => {
-    spot.addEventListener("click", handleSpotClick);
+    spot.addEventListener("click", handleSpotClick); 
   });
 
   restartButton.addEventListener("click", resetGame);
@@ -134,10 +134,10 @@ const adjacencyList = {
         // Check for win condition immediately after removal
         if (checkWinCondition()) return;
 
-        // After win check, update phase for the *next* player's turn, then switch player
-        checkGamePhase(); // Call checkGamePhase *after* potential win, but *before* switching currentPlayer for next turn context
+        // After win check, update phase for the next player's turn, then switch player
+        checkGamePhase(); 
         currentPlayer = getOpponent(currentPlayer); // Opponent's turn after removal
-        updateStatus(); // Update status for the next player
+        updateStatus(); // Updates status for the next player
       } else {
         statusEl.textContent = "❌ You must remove an opponent's piece.";
       }
@@ -171,8 +171,8 @@ const adjacencyList = {
       if (checkMill(index, currentPlayer)) {
         message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
         removeMode = true;
-        statusEl.textContent = message; // Set specific message for mill
-        // Do NOT change player, as they get another move (removal)
+        statusEl.textContent = message; 
+        
         return;
       }
 
@@ -181,7 +181,7 @@ const adjacencyList = {
       if (checkWinCondition()) return;
 
       currentPlayer = getOpponent(currentPlayer);
-      updateStatus(message); // Update status with placement info + next player
+      updateStatus(message); // Updates status with placement info + next player
       return;
     }
 
@@ -198,7 +198,7 @@ const adjacencyList = {
           statusEl.textContent = "Shiver me timbers! That's not yer piece!";
         }
       } else {
-        if (selectedSpot === index) { // Clicked the same spot, deselect
+        if (selectedSpot === index) { // should deslect the piece if you click on it again
           spots[selectedSpot].classList.remove("selected");
           selectedSpot = null;
           updateStatus(); // Update status back to current player's turn
@@ -218,7 +218,7 @@ const adjacencyList = {
             message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
             removeMode = true;
             statusEl.textContent = message;
-            // Do NOT change player, as they get another move (removal)
+            
           } else {
             // After moving, check for phase change and win condition
             checkGamePhase();
@@ -268,7 +268,7 @@ const adjacencyList = {
             removeMode = true;
             statusEl.textContent = message;
           } else {
-            // After flying, check for phase change and win condition
+            // After flying, this checks for phase change and win condition
             checkGamePhase();
             if (checkWinCondition()) return;
             currentPlayer = getOpponent(currentPlayer);
@@ -305,12 +305,12 @@ const adjacencyList = {
     } else if (phase === "moving") {
         baseStatus = `${capitalize(currentPlayer)}'s turn to move.`;
     } else if (phase === "flying") {
-        baseStatus = `🏴‍☠️ ${capitalize(currentPlayer)}'s turn to FLY!`; // Specific message for flying
+        baseStatus = `🏴‍☠️ ${capitalize(currentPlayer)}'s turn to FLY!`; 
     }
     statusEl.textContent = message ? `${message} ${baseStatus}` : baseStatus;
   }
 
-  // UPDATED: Flying phase now triggers when a player has EXACTLY 3 pieces
+  
   function checkGamePhase() {
     const prevPhase = phase; 
     // Only transition to moving/flying if all 9 pieces are placed by both players
@@ -322,7 +322,7 @@ const adjacencyList = {
       const player1CanFly = (p1Pieces === 3);
       const player2CanFly = (p2Pieces === 3);
 
-      if (player1CanFly || player2CanFly) {
+      if (player1CanFly || player2CanFly) { // if either player has exactly 3 pieces, the game moves into the "flying" phase 
         phase = "flying";
       } else {
         phase = "moving";
