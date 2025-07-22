@@ -7,8 +7,8 @@
 ![third game board screenshot](assets/endgame.jpeg)
 
 
-## Table of Contents
 
+Play the game online here: [Nine Men's Morris Game](https://zacj74.github.io/Nine-Mens-Morris/)
 
 
 ## About the Game
