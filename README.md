@@ -78,7 +78,7 @@ This project is currently **in development**.
 
 ## Future Enhancements
 
-* **Improved AI Opponent:** Develop a challenging AI that can play against the human player.
+* **AI Opponent:** Develop a challenging AI that can play against the human player.
 * **Sound Effects:** Add thematic sounds for piece placement, mill formation, and victories.
 * **Animations:** Smooth animations for piece movement and removal
 * **Undo/Redo Functionality:** 

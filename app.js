@@ -93,7 +93,7 @@ const adjacencyList = {
   };
 
   function isAdjacent(from, to) {
-    return adjacencyList[from] && adjacencyList[from].includes(to); // 
+    return adjacencyList[from] && adjacencyList[from].includes(to);  
   }
 
   spots.forEach(spot => {
@@ -109,21 +109,21 @@ const adjacencyList = {
     // --- REMOVE MODE LOGIC ---
     if (removeMode) {
       if (board[index] === getOpponent(currentPlayer)) {
-        // Prevent removing a piece that is part of an opponent's mill,
+        // Prevents removing a piece that is part of an opponent's mill,
         // unless ALL of their pieces are in mills.
         if (checkMill(index, getOpponent(currentPlayer))) {
           const opponentPiecesNotInMill = Array.from(spots).filter((s, i) =>
             board[i] === getOpponent(currentPlayer) && !checkMill(i, getOpponent(currentPlayer))
           ).length;
 
-          if (opponentPiecesNotInMill > 0) {
-            statusEl.textContent = "❌ You must remove an opponent's piece NOT in a mill, if available.";
+          if (opponentPiecesNotInMill > 0) { // as long as there are not any pieces not in a mill, then you can remove a piece in a mill
+            statusEl.textContent = " You must remove an opponent's piece NOT in a mill, if available.";
             return;
           }
         }
 
         board[index] = null;
-        spot.classList.remove("player1", "player2");
+        spot.classList.remove("player1", "player2"); // removes the class from the spot
         if (getOpponent(currentPlayer) === "player1") {
           player1PiecesOnBoard--;
         } else {
@@ -139,15 +139,15 @@ const adjacencyList = {
         currentPlayer = getOpponent(currentPlayer); // Opponent's turn after removal
         updateStatus(); // Updates status for the next player
       } else {
-        statusEl.textContent = "❌ You must remove an opponent's piece.";
+        statusEl.textContent = " You must remove an opponent's piece.";
       }
       return;
     }
 
     // --- PLACING PHASE LOGIC ---
-    if (phase === "placing") {
+    if (phase === "placing") { // this is the first phase of the game
       if (board[index]) {
-        statusEl.textContent = "❌ That spot is already taken.";
+        statusEl.textContent = " That spot is already taken.";
         return;
       }
 
@@ -168,10 +168,10 @@ const adjacencyList = {
 
       let message = `${capitalize(currentPlayer)} placed at spot ${index}.`;
 
-      if (checkMill(index, currentPlayer)) {
+      if (checkMill(index, currentPlayer)) { // checks is mill is formed
         message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
-        removeMode = true;
-        statusEl.textContent = message; 
+        removeMode = true; // turns on remove mode
+        statusEl.textContent = message; //updates status with mill message
         
         return;
       }
@@ -186,11 +186,11 @@ const adjacencyList = {
     }
 
     // --- MOVING PHASE LOGIC ---
-    if (phase === "moving") {
-      if (selectedSpot === null) {
-        if (board[index] === currentPlayer) {
-          selectedSpot = index;
-          spots[index].classList.add("selected");
+    if (phase === "moving") { // second phase of the game
+      if (selectedSpot === null) { // No piece selected yet
+        if (board[index] === currentPlayer) { // Clicked on own piece
+          selectedSpot = index; // pulls the index of the piece clicked
+          spots[index].classList.add("selected"); // adds a class to the spot
           statusEl.textContent = `⚓ ${capitalize(currentPlayer)}, move piece from spot ${index}.`;
         } else if (board[index] === null) {
           statusEl.textContent = "Aye, pick one of yer own pieces to move!";
@@ -236,7 +236,7 @@ const adjacencyList = {
     }
 
     // --- FLYING PHASE LOGIC ---
-    if (phase === "flying") {
+    if (phase === "flying") { // ------------------------------------------- 
       if (selectedSpot === null) {
         if (board[index] === currentPlayer) {
           selectedSpot = index;
@@ -248,7 +248,7 @@ const adjacencyList = {
           statusEl.textContent = "That be a rival's piece, ye can't fly that!";
         }
       } else {
-        if (selectedSpot === index) { // Clicked the same spot, deselect
+        if (selectedSpot === index) { // Click the same spot to deselect
           spots[selectedSpot].classList.remove("selected");
           selectedSpot = null;
           updateStatus();
@@ -311,14 +311,14 @@ const adjacencyList = {
   }
 
   
-  function checkGamePhase() {
+  function checkGamePhase() { // ---------------------------------------------
     const prevPhase = phase; 
     // Only transition to moving/flying if all 9 pieces are placed by both players
     if (piecesPlaced.player1 === 9 && piecesPlaced.player2 === 9) {
       const p1Pieces = player1PiecesOnBoard;
       const p2Pieces = player2PiecesOnBoard;
 
-      // Determine if either player has EXACTLY 3 pieces
+      // Determines if either player has EXACTLY 3 pieces
       const player1CanFly = (p1Pieces === 3);
       const player2CanFly = (p2Pieces === 3);
 
@@ -338,7 +338,7 @@ const adjacencyList = {
     // ONLY check for fewer than 3 pieces if ALL pieces have been placed
     if (piecesPlaced.player1 === 9 && piecesPlaced.player2 === 9) {
       if (opponentPieces < 3) {
-        statusEl.textContent = `🏴‍☠️ ${capitalize(currentPlayer)} WINS! The ${capitalize(opponent)} has fewer than 3 pieces!`;
+        statusEl.textContent = ` ${capitalize(currentPlayer)} WINS! The ${capitalize(opponent)} has fewer than 3 pieces!`;
         disableBoardClicks();
         restartButton.style.display = "block";
         return true;
@@ -366,38 +366,38 @@ const adjacencyList = {
             }
           }
         }
-        if (hasValidMove) break;
+        if (hasValidMove) break; // Break if we found a valid move
       }
 
-      if (!hasValidMove) {
-        statusEl.textContent = `🏴‍☠️ ${capitalize(currentPlayer)} WINS! The ${capitalize(opponent)} has no legal moves!`;
-        disableBoardClicks();
-        restartButton.style.display = "block";
+      if (!hasValidMove) { // if there are no vaslid moves left for the opponent to perform, the game is over and the current player wins
+        statusEl.textContent = ` ${capitalize(currentPlayer)} WINS! The ${capitalize(opponent)} has no legal moves!`;
+        disableBoardClicks(); // truns off further clicks on the board
+        restartButton.style.display = "block"; // shows the restart button
         return true;
       }
     }
     return false;
   }
 
-  function disableBoardClicks() {
-    spots.forEach(spot => {
+  function disableBoardClicks() { // disables board clicks
+    spots.forEach(spot => { 
       spot.removeEventListener("click", handleSpotClick);
       spot.style.cursor = "not-allowed";
     });
   }
 
-  function resetGame() { 
-    board.fill(null);
-    spots.forEach(spot => {
+  function resetGame() { // reset functionalty
+    board.fill(null); // resets board layout
+    spots.forEach(spot => { // resets all the spots
       spot.classList.remove("player1", "player2", "selected");
       spot.addEventListener("click", handleSpotClick); // Re-added listeners
       spot.style.cursor = "pointer";
     });
-    currentPlayer = "player1";
-    phase = "placing";
-    removeMode = false;
-    piecesPlaced.player1 = 0;
-    piecesPlaced.player2 = 0;
+    currentPlayer = "player1"; // resets current player
+    phase = "placing"; // resets game phase
+    removeMode = false; // turns off remove mode
+    piecesPlaced.player1 = 0;  // resets pieces placed for player 1
+    piecesPlaced.player2 = 0; // resets pieces placed for player 2
     player1PiecesOnBoard = 0;
     player2PiecesOnBoard = 0;
     selectedSpot = null;
