@@ -92,17 +92,17 @@ const adjacencyList = {
     23: [20, 22, 15] // Inner Bottom-Right
   };
 
-  function isAdjacent(from, to) {
+  function isAdjacent(from, to) { // Checks if two spots are adjacent based on the adjacency list
     return adjacencyList[from] && adjacencyList[from].includes(to);  
   }
 
-  spots.forEach(spot => {
+  spots.forEach(spot => { // adds click event listeners to each spot
     spot.addEventListener("click", handleSpotClick); 
   });
 
-  restartButton.addEventListener("click", resetGame);
+  restartButton.addEventListener("click", resetGame); // adds click event listener to the restart button
 
-  function handleSpotClick(e) {
+  function handleSpotClick(e) { // Handles the logic for clicking on a spot
     const spot = e.target;
     const index = parseInt(spot.id.replace("spot-", ""));
 
@@ -214,7 +214,7 @@ const adjacencyList = {
 
           let message = `${capitalize(currentPlayer)} moved from ${selectedSpot} to ${index}.`;
 
-          if (checkMill(index, currentPlayer)) {
+          if (checkMill(index, currentPlayer)) { 
             message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
             removeMode = true;
             statusEl.textContent = message;
@@ -236,16 +236,16 @@ const adjacencyList = {
     }
 
     // --- FLYING PHASE LOGIC ---
-    if (phase === "flying") { // ------------------------------------------- 
-      if (selectedSpot === null) {
-        if (board[index] === currentPlayer) {
+    if (phase === "flying") { // ------------------------------------------- similar to moving, but with slightly different rules
+      if (selectedSpot === null) { 
+        if (board[index] === currentPlayer) { 
           selectedSpot = index;
-          spots[index].classList.add("selected");
-          statusEl.textContent = `Ahoy, ${capitalize(currentPlayer)}, fly yer piece from spot ${index}!`;
+          spots[index].classList.add("selected"); // adds a class to the spot
+          statusEl.textContent = `Ahoy, ${capitalize(currentPlayer)}, fly yer piece from spot ${index}!`; // updates status with flying message
         } else if (board[index] === null) {
-          statusEl.textContent = "Ye need to select yer own piece to fly, savvy?";
+          statusEl.textContent = "Ye need to select yer own piece to fly, savvy?"; // updates status with error message
         } else {
-          statusEl.textContent = "That be a rival's piece, ye can't fly that!";
+          statusEl.textContent = "That be a rival's piece, ye can't fly that!"; // updates status with error message
         }
       } else {
         if (selectedSpot === index) { // Click the same spot to deselect
@@ -258,12 +258,12 @@ const adjacencyList = {
           board[index] = currentPlayer;
           board[selectedSpot] = null;
 
-          spots[selectedSpot].classList.remove(currentPlayer, "selected");
+          spots[selectedSpot].classList.remove(currentPlayer, "selected"); // removes the class from the selected spot
           spot.classList.add(currentPlayer);
 
           let message = `${capitalize(currentPlayer)} flew from ${selectedSpot} to ${index}.`;
 
-          if (checkMill(index, currentPlayer)) {
+          if (checkMill(index, currentPlayer)) { // mill check to see if a mills was formed
             message = `🎉 ${capitalize(currentPlayer)} formed a MILL! Remove one of your opponent's pieces.`;
             removeMode = true;
             statusEl.textContent = message;
